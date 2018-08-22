@@ -40,58 +40,83 @@ document.addEventListener("DOMContentLoaded", function() {
 	req.send();
 	req.onload = function() {
 		const json = JSON.parse(req.responseText);
-		console.log(json);
+		const data = json.monthlyVariance;
+		console.log(data);
+		//		window.innerWidth and .innerHeight
+		console.log(`${window.innerHeight}x${window.innerWidth}`);
 		/*----------------D3 Code here-----------------*/
-		// const d3 = require("d3");
-		// const mg = { top: 50, bottom: 50, right: 30, left: 70 };
-		// /*-----------------Attributes------------------*/
-		// const diaAt = {
-		// 	height: 500,
-		// 	width: 700
-		// };
-		// const svgAt = {
-		// 	height: mg.top + diaAt.height + mg.bottom,
-		// 	width: mg.left + diaAt.width + mg.right,
-		// 	id: "svg-canvas"
-		// };
+		const d3 = require("d3");
+		const mg = { t: 50, b: 50, r: 30, l: 70 };
+		/*-----------------Attributes------------------*/
+		//Bar
+		const b = { h: 20, w: 3 };
+		//Diag
+		const d = {
+			h: 12 * b.h,
+			w: Math.ceil((b.w * data.length) / 12)
+		};
+		//SVG
+		const s = {
+			h: mg.t + d.h + mg.b,
+			w: mg.l + d.w + mg.r,
+			i: "svg-canvas"
+		};
+		console.log(d);
 
-		// const parseMinSec = d3.timeParse("%M:%S");
-		// const parseYear = d3.timeParse("%Y");
+		//Scales
+		const parseMonth = d3.timeParse("%m");
+		const parseYear = d3.timeParse("%Y");
 		// let minMax = json
 		// 	.map((obj) => +obj.Time.substring(0, 2))
 		// 	.sort((a, b) => a - b);
-		// /*Domains are widened so that the dots dont end up overlaying axis*/
-		// const x = d3
-		// 	.scaleTime()
-		// 	.domain([
-		// 		d3.min(json, (d) => parseYear(d.Year - 1)),
-		// 		d3.max(json, (d) => parseYear(d.Year + 1))
-		// 	])
-		// 	.range([0, diaAt.width]);
-		// const y = d3
-		// 	.scaleTime()
-		// 	.domain([
-		// 		parseMinSec(`${minMax[0]}:00`),
-		// 		parseMinSec(`${minMax[minMax.length - 1] + 1}:00`)
-		// 	])
-		// 	.range([0, diaAt.height]);
+		const x = d3
+			.scaleTime()
+			.domain([
+				d3.min(data, (d) => parseYear(d.year + 1)),
+				d3.max(data, (d) => parseYear(d.year - 1))
+			])
+			.range([0, d.w]);
+		//console.log(d3.max(data, (d) => parseYear(d.year + 1)));
+		//console.log(d3.min(data, (d) => parseYear(d.year - 1)));
+		const y = d3
+			.scaleTime()
+			.domain([
+				d3.max(data, (d) => parseMonth(d.month)),
+				d3.min(data, (d) => parseMonth(d.month))
+			])
+			.range([0, d.h]);
+		//console.log(y(parseMonth(1)));
+		//console.log(y(parseMonth(12)));
+		console.log(x.domain());
 
-		// //Axis
-		// const yAxis = d3.axisLeft(y).tickFormat(d3.timeFormat("%M:%S"));
-		// const xAxis = d3.axisBottom(x);
+		//Axis
+		const yAxis = d3.axisLeft(y).tickFormat(d3.timeFormat("%B"));
+		//			.tickSize(1, 10);
+		const xAxis = d3.axisBottom(x);
 
-		// const svg = d3
-		// 	.select("main")
-		// 	.append("svg")
-		// 	.attr("id", svgAt.id)
-		// 	.attr("height", svgAt.height)
-		// 	.attr("width", svgAt.width);
+		const svg = d3
+			.select("main")
+			.append("svg")
+			.attr("id", s.i)
+			.attr("height", s.h)
+			.attr("width", s.w);
 
-		// const diag = svg
-		// 	.append("g")
-		// 	.attr("height", diaAt.height)
-		// 	.attr("width", diaAt.width)
-		// 	.attr("transform", `translate(${mg.left},${mg.top})`);
+		const diag = svg
+			.append("g")
+			.attr("height", d.h)
+			.attr("width", d.w)
+			.attr("transform", `translate(${mg.l},${mg.t})`);
+
+		/*---------Generating axis`s-----------*/
+		const myYaxs = diag
+			.append("g")
+			.call(yAxis)
+			.attr("id", "y-axis");
+		const myXaxs = diag
+			.append("g")
+			.call(xAxis)
+			.attr("id", "x-axis")
+			.attr("transform", `translate(0,${d.h})`);
 
 		// let tooltipDiv = d3
 		// 	.select("body")
@@ -114,16 +139,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		// 			title.node().getBoundingClientRect().width / 2
 		// 	)
 		// 	.attr("y", (mg.top + title.node().getBoundingClientRect().height) / 2);
-		// /*---------Generating axis`s-----------*/
-		// const myYaxs = diag
-		// 	.append("g")
-		// 	.call(yAxis)
-		// 	.attr("id", "y-axis");
-		// diag
-		// 	.append("g")
-		// 	.call(xAxis)
-		// 	.attr("id", "x-axis")
-		// 	.attr("transform", `translate(0,${diaAt.height})`);
 		// /*Label for y-axis*/
 		// const yLabel = diag
 		// 	.append("text")
