@@ -18594,14 +18594,32 @@ document.addEventListener("DOMContentLoaded", function() {
 			.attr("fill", (d) => d)
 			.attr("stroke", "black");
 
-		console.log(
-			color.range().map((d) => {
-				d = color.invertExtent(d);
-				if (d[0] == null) d[0] = x.domain()[0];
-				if (d[1] == null) d[1] = x.domain()[1];
-				return d;
-			})
-		);
+		//Legend scale
+
+		const lgSc = d3
+			.scaleLinear()
+			.domain(color.domain())
+			.range([0, lg.w * clr.length]);
+
+		const tickVals = color.range().reduce((acc, d, i) => {
+			let tmp = color.invertExtent(d);
+			acc.push(tmp[0]);
+			if (i === color.range().length - 1) acc.push(tmp[1]);
+			return acc;
+		}, []);
+
+		const lgAxis = d3
+			.axisBottom(lgSc)
+			.tickFormat(d3.format(".1f"))
+			.tickValues(tickVals);
+
+		const lgXaxs = legend
+			.append("g")
+			.call(lgAxis)
+			.attr("id", "lg-axis")
+			.attr("transform", `translate(0,${lg.h})`);
+
+		//Centering legend in lower margin
 
 		const tmp = myXaxs.node().getBoundingClientRect().height;
 
@@ -18614,60 +18632,6 @@ document.addEventListener("DOMContentLoaded", function() {
 				(mg.b - tmp) / 2 -
 				legend.node().getBoundingClientRect().height / 2})`
 		);
-
-		// /*Label for y-axis*/
-		// const yLabel = diag
-		// 	.append("text")
-		// 	.attr("id", "label")
-		// 	.attr("transform", "rotate(-90)")
-		// 	.text("Time in minutes");
-		// const yLbWid = myYaxs.node().getBoundingClientRect().width;
-		// yLabel
-		// 	.attr(
-		// 		"x",
-		// 		-(yLabel.node().getBoundingClientRect().height + diaAt.height) / 2
-		// 	)
-		// 	.attr("y", -yLbWid - (mg.left - yLbWid) / 4);
-		// /*Circles*/
-		// const color = d3.scaleOrdinal(d3.schemeCategory10).domain([0, false, true]);
-
-		// /*Legend*/
-		// const lmg = { t: 2, b: 2, r: 2, l: 2 };
-		// const lrec = { h: 15, w: 15 };
-		// const legend = diag.append("svg").attr("id", "legend");
-		// const legItems = legend
-		// 	.selectAll(".legend-item")
-		// 	.data(color.domain().slice(1))
-		// 	.enter()
-		// 	.append("g")
-		// 	.attr("class", "legend-item")
-		// 	.attr(
-		// 		"transform",
-		// 		(d, i) => `translate(0,${(lmg.t + lrec.h + lmg.b) * i})`
-		// 	);
-
-		// legItems
-		// 	.append("rect")
-		// 	.attr("width", lrec.w)
-		// 	.attr("height", lrec.h)
-		// 	.style("fill", color)
-		// 	.style("stroke", "black");
-
-		// legItems
-		// 	.append("text")
-		// 	.text(
-		// 		(d) => (d ? "No doping allegations" : "Riders with doping allegations")
-		// 	)
-		// 	.attr("x", lrec.w + lmg.r)
-		// 	.attr("y", lrec.h - 3);
-		// const legDim = {
-		// 	h: legItems.node().getBoundingClientRect().height,
-		// 	w: legItems.node().getBoundingClientRect().width
-		// };
-		// legend.attr(
-		// 	"transform",
-		// 	`translate(${(diaAt.width - legDim.w) / 2},${lmg.t})`
-		// );
 	};
 });
 
