@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			.tickFormat(d3.format(".1f"))
 			.tickValues(tickVals);
 
-		const lgXaxs = legend
+		legend
 			.append("g")
 			.call(lgAxis)
 			.attr("id", "lg-axis")
